@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="mycanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("mycanvas");
+        const c = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let mouse = {
+            x: undefined,
+            y: undefined,
+        };
+
+        window.addEventListener("mousemove", function (event) {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        //dynamically resize the canvas width and height with window dimensions
+        window.addEventListener("resize", function () {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            //to dynamically recreate circle when we resize the window
+            currentwindow();
+        })
+
+        //creating a color palet array
+        var colorArray = ['#1E3E73', '#00519C', '#4797D1', '#FCBD38', '#F29F05', '#F23030'];
+
+        //creating a circle object
+        function Circle(x, y, radius, dx, dy) {
+            this.x = x;
+            this.y = y;
+            this.dx = dx;
+            this.dy = dy;
+            this.radius = radius;
+            this.minradius = radius;
+            this.maxradius = 40;
+            this.color = colorArray[Math.floor(Math.random() * colorArray.length)];
+
+            this.draw = function () {
+                //drawing a circle
+                c.beginPath();
+                c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                c.strokeStyle = "black";
+                c.fillStyle = this.color;
+                c.fill();
+            }
+
+            this.update = function () {
+                //to create the bounce effect
+                if (this.x + this.radius > innerWidth || this.x - this.radius < 0) {
+                    this.dx = -this.dx;
+                }
+                if (this.y + this.radius > innerHeight || this.y - this.radius < 0) {
+                    this.dy = -this.dy;
+                }
+
+                //to give speed effect by changing the x and y position
+                this.x = this.x + this.dx;
+                this.y = this.y + this.dy;
+
+                //interactivity
+                if (mouse.x - this.x < 50 && mouse.x - this.x > -50 && mouse.y - this.y < 50 && mouse.y - this.y > -50) {
+                    if (this.radius < this.maxradius) {
+                        this.radius += 2;
+                    }
+                }
+                else if (this.radius > this.minradius) {
+                    this.radius -= 1;
+                }
+
+                this.draw();
+            }
+        }
+
+        //creating a circle array to store multiple circle
+        var circleArray = [];
+
+        //function to adjust dynamically the circles space occupacy
+        function currentwindow() {
+            //to delete the previous 100 circles while resizing
+            circleArray = [];
+
+            for (let i = 0; i < 1000; i++) {
+                //giving random position
+                var radius = Math.random() * 3 + 1;
+                var x = Math.random() * (innerWidth - 2 * radius) + radius;
+                var y = Math.random() * (innerHeight - 2 * radius) + radius;
+                //giving random speed
+                var dx = (Math.random() - 0.5);
+                var dy = (Math.random() - 0.5);
+
+                circleArray[i] = new Circle(x, y, radius, dx, dy);
+            }
+        }
+
+        currentwindow();
+
+        //to create motion
+        function animate() {
+            requestAnimationFrame(animate);
+
+            //to clear the prevous drawn circle to get the effect of moving circle
+            c.clearRect(0, 0, innerWidth, innerHeight);
+
+            for (let i = 0; i < circleArray.length; i++) {
+                circleArray[i].update();
+            }
+        }
+
+        animate();
+
+    </script>
+</body>
+
+</html>
